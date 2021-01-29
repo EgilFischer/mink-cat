@@ -7,8 +7,9 @@
 #                                                           #
 #############################################################
 
-## load packages ####
+## load packages / user defined functions ####
 library(readxl)
+source("FinalSizeFastImplementation.R")
 
 ## load data  ####
 cat.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dataset hond-kat.xlsx")
@@ -60,6 +61,15 @@ prevalencesR0$R0= sapply(X = prevalencesR0$SARS2_ELISA,FUN = R0)
 prevalencesR0
 
 # estimate R with final size distribution for each farm 
+fs.data <- cbind(aggregate(SARS2_ELISA ~codeloc,sum,data = cat.data),
+      samples = aggregate(katserum ~codeloc,sum,data = cat.data)[1:8,2])
+fs.data<- fs.data[fs.data$SARS2_ELISA>0&fs.data$samples>1,]#only those where at least one infectious and more than 1 sample is present
+fs.data
 
-
+x.cats <- fs.data$SARS2_ELISA-1 #cases 
+s0.cats <- fs.data$samples -1   #susceptible cats at start is samples minus 1
+i0.cats<- rep(1,length(fs.data$codeloc)) #initial infectious is 1
+FinalSize(x.cats,s0.cats,i0.cats,max.val = 200)
+FinalSize(x.cats[1],s0.cats[1],i0.cats[1],max.val = 500)
+FinalSize(x.cats[2],s0.cats[2],i0.cats[2],max.val = 500)
 

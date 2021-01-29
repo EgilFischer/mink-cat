@@ -46,35 +46,66 @@ distFSfast <- function(R,s0in,i0in ,r0in = NULL)
      return(gen.mat.out)
 }
 
-system.time(tst<-distFSfast(3.5,c(49,19,5,4),c(1,1,1,1)))
-tst
+pFS <- function(R,x,s0,i0){
+  #produce final size distribution for value r
+  final.size.dist <- distFSfast(R,s0,i0);
+  #return the outcome for x 
+  return(prod(mapply(function(i,j)final.size.dist[i,j+1],c(1:length(s0)),x)))
+}
 
+pFS(3.5,c(0,0),c(7,7),c(7,7))
 ###Function to determine the probability of more extreme values given R####
 # r = R, x = final number of cases, s0 = initial susceptibles, i0 = initial infectious, comp = the type of extreme 
 rm(pExtremes)
 pExtremes<-  function(r,x,s0in,i0in,comp = `<`){
   #create all possible outcomes of these transmission experiments
   #this means all possibilities between 0 and s0 contact infection (hence s0 + 1 options per trial)
-  out <- matrix(ncol = length(s0),nrow = prod(s0+1))
+  out <- matrix(ncol = length(s0in),nrow = prod(s0in+1))
   #repeat the outcome as many times as the previous trial possibilities
-  for(k in c(1:length(s0)))
+  for(k in c(1:length(s0in)))
   {
     #check how often to repeat the same number given previous trials
-    repetition <- ifelse(k > 1,prod(s0[1:k-1]+1),1)
+    repetition <- ifelse(k > 1,prod(s0in[1:k-1]+1),1)
     #put it in the matrix
-    out[,k]<- matrix(sapply(c(0:s0[k]),FUN = function(x){rep(x,repetition)}), ncol = 1, nrow =prod(s0+1))[,1]
+    out[,k]<- matrix(sapply(c(0:s0in[k]),
+                            FUN = function(x){rep(x,repetition)}), 
+                     ncol = 1, 
+                     nrow =prod(s0in+1))[,1]
   }
   #produce final size distribution for value r
   final.size.dist <- distFSfast(r,s0in,i0in);
   #define function for this distribution for the probability of a certain number of cases x in each of the trials
-  pFS<- function(v,m){return(prod(prod(mapply(function(i,j)final.size.dist[i,j],c(1:length(s0in)),v))))}
+  pFSloc<- function(v){return(prod(mapply(function(i,j)final.size.dist[i,j+1],c(1:length(s0in)),v)))}
   #select the extremes by selecting those for which the total number of cases
   #and the sum of x are given by the comparison "comp"  thus either <,>,<= or >= 
   #calculate for each extreme the probability of the Final Size under the hypothesis R = r
   #and sum all probabilities of these extreme outcomes
   #If only one extreme outcome possible: 
   if(is.null(dim(out[comp(apply(out,1,sum),sum(x)),]))){
-    return(pFS(out[comp(apply(out,1,sum),sum(x)),],m))}
+    return(pFSloc(out[comp(apply(out,1,sum),sum(x)),]))}
   #else
-  return(c(sum(apply(out[comp(apply(out,1,sum),sum(x)),],1,function(ext){pFS(ext,m)}))))
+  return(c(sum(apply(out[comp(apply(out,1,sum),sum(x)),],1,function(ext){pFSloc(ext)}))))
+}
+
+##################################################################################################
+#                                                                                                #
+#                  Function to estimate R using the final size method                            #
+#                  Includes confidence interval size 1- alpha and R >= 1 test                    #
+#                                                                                                #
+##################################################################################################
+FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE){
+  res <- data.frame(point.est = as.numeric(1), ci.ll = as.numeric(1),ci.ul= as.numeric(1), pval = as.numeric(1))
+  #determine the point estimate by optimization of the log-likelihood function
+  res$point.est <- optimize(interval = c(0.0,25), f = function(R){-log(pFS(R,x,s0,i0))})$minimum
+  #determine the confidence intervals
+  #if one-sided is FALSE both sides, either only lower or upper limit of CI
+  #lowerlimit is found for values of R for which the probability of extremes above the observations 
+  res$ci.ll <- optimize(interval = c(0.0,25),f = function(R){( pExtremes(R,x,s0,i0,comp = `>=`) - alpha / (2 - onesided))^2})$minimum
+  #upperlimit is found for values of R for which the probability of extremes below the observations
+  res$ci.ul <- optimize(interval = c(0.0,25),f = function(R){( pExtremes(R,x,s0,i0,comp = `<=`) - alpha / (2 - onesided))^2})$minimum
+  
+  #probability of R >= 1 is found be calculating the probability to find an equal or less positive under the assumption R0 = 1
+  res$pval = pExtremes(1,x,s0,i0,comp = `<=`)
+  
+  return(res)
 }
