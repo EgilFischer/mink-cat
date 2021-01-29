@@ -11,6 +11,7 @@
 # Functions to calculate the exact probability of a specific final size given inital conditions and R #
 #######################################################################################################
 library("compiler")
+library("Rcpp")
 #pSI is a function to describe the probability of being in a state S,I given R and S0 and I0
 rm(pSI)
 options(expressions=10000)
@@ -29,58 +30,46 @@ pFS<- function(R,x,s0,i0){
   #Itterate over the trials 
   pfs <- 1
   for(m in c(1:length(x))){
-    pfs<-pfs*pSI(s0[m] - x[m], 0, R, s0[m],i0[m])
-  }
-  return(pfs)
-}
-
-pFS_comp <- cmpfun( function(R,x,s0,i0){
-  #Itterate over the trials 
-  pfs <- 1
-  for(m in c(1:length(x))){
     pfs<-pfs*pSI_comp(s0[m] - x[m], 0, R, s0[m],i0[m])
   }
   return(pfs)
-})
-
-####Function to determine the probability of an observation x1, ..., xm final sizes given R#####
-### this function will first create a generation based table with states
-s0 = 7
-i0 = 7
-n = s0+i0
-R =3.5
-prec =function(s){1-s*R/(s*R + n)}
-gen.mat <- matrix(rep(0, (s0+i0+1)*(s0+1)),nrow= (s0+1))
-gen.mat[s0+1,i0+1]<- 1;
-#fill first
-for(j in c((s0+1):1)){gen.mat[s0+1,j-1]<- gen.mat[s0+1,j]*prec(s0) }
-gen.mat
-#next rows added by infection
-for(i in c(0:(s0-1))){
-    for(j in c((s0+i0+1):1)){
-          gen.mat[s0-i,j]<- gen.mat[s0-i,j]*prec(s0-i-1) + gen.mat[s0-(i-1),j-1]*(1-prec(s0-(i-1)-1))
-      }
-  }
-gen.mat
-
-gen.tab <- function(R,s0,i0){
-  gen.mat <- matrix(rep(0, s0+i0*s0),nrow= s0);
-  gen.mat[i0]<- 1;
-  p 
-  for(j in 2:s0)
-  {
-    next.gen <- 
-    gen.mat <- rbind(gen.mat,
-                     next.gen)
-  }
-  
 }
 
-n <- s0+i0
-if(s > s0 | i > n){return(0)}#limit impossible states
-if(s == s0 & i==i0){return(1)}#probability of being in the start state = 1
-if(i <= 1){return(pSI(s,i+1,R,s0,i0) *  n/(R*s + n))}  #State i = 0,1 can only be reached by recovery, because we start with at least one infected animal
-return(pSI(s + 1,i - 1,R,s0,i0) * (R * (s + 1)/(R * (s + 1) + n)) +   pSI(s,i+1,R,s0,i0) * n/(R*s +n)) #otherwise this state was reached from either s+1, i-1 by infection or from i +1 by recovery
+ pFS_comp <- cmpfun(pFS) #function(R,x,s0,i0){
+#   #Itterate over the trials 
+#   pfs <- 1
+#   for(m in c(1:length(x))){
+#     pfs<-pfs*pSI_comp(s0[m] - x[m], 0, R, s0[m],i0[m])
+#   }
+#  return(pfs)
+#})
+
+system.time(sapply(rlnorm(10,1,1),pFS_comp, x =c(1,2,3,4), s0 = c(50,10,10,10),i0=c(1,1,1,1)))
+system.time(sapply(rlnorm(10,1,1),pFS, x =c(1,2,3,4), s0 = c(50,10,10,10),i0=c(1,1,1,1)))
+####Function to determine the probability of an observation x1, ..., xm final sizes given R#####
+### this function will first create a generation based table with states
+
+FSdist.tab <- function(R,s0,i0){
+  n = s0+i0;
+  
+}
+# s0 = 7
+# i0 = 7
+# n = s0+i0
+# R =3.5
+# prec =function(s){1-s*R/(s*R + n)}
+# gen.mat <- matrix(rep(0, (s0+i0+1)*(s0+1)),nrow= (s0+1))
+# gen.mat[s0+1,i0+1]<- 1;
+# #fill first
+# for(j in c((s0+1):1)){gen.mat[s0+1,j-1]<- gen.mat[s0+1,j]*prec(s0) }
+# gen.mat
+# #next rows added by infection
+# for(i in c(0:(s0-1))){
+#     for(j in c((s0+i0+1):1)){
+#           gen.mat[s0-i,j]<- gen.mat[s0-i,j]*prec(s0-i-1) + gen.mat[s0-(i-1),j-1]*(1-prec(s0-(i-1)-1))
+#       }
+#   }
+# gen.mat
 
 pFS<- function(R,x,s0,i0){
   #Itterate over the trials 
@@ -100,6 +89,72 @@ pFS_comp <- cmpfun( function(R,x,s0,i0){
   return(pfs)
 })
 
+#return the complete final size distribution 
+FSdist <- function(R,s0,i0){
+  max.cases <- max(s0+i0)
+  dist <- NULL
+  for(m in c(1:length(s0))){
+    dist<-rbind(dist,sapply(c(0:max.cases), FUN = pSI, i = 0, R = R, s0 = s0[m],i0 = i0[m]))
+  }
+  return(dist)
+}
+
+system.time(FSdist(1,c(5,5),c(1,1)))
+
+
+FSdist.tab <- function(R,s0,i0){
+  n = s0+i0;
+  
+}
+# s0 = 7
+# i0 = 7
+# n = s0+i0
+# R =3.5
+# prec =function(s){1-s*R/(s*R + n)}
+# gen.mat <- matrix(rep(0, (s0+i0+1)*(s0+1)),nrow= (s0+1))
+# gen.mat[s0+1,i0+1]<- 1;
+# #fill first
+# for(j in c((s0+1):1)){gen.mat[s0+1,j-1]<- gen.mat[s0+1,j]*prec(s0) }
+# gen.mat
+# #next rows added by infection
+# for(i in c(0:(s0-1))){
+#     for(j in c((s0+i0+1):1)){
+#           gen.mat[s0-i,j]<- gen.mat[s0-i,j]*prec(s0-i-1) + gen.mat[s0-(i-1),j-1]*(1-prec(s0-(i-1)-1))
+#       }
+#   }
+# gen.mat
+
+pFS<- function(R,x,s0,i0){
+  #Itterate over the trials 
+  pfs <- 1
+  for(m in c(1:length(x))){
+    pfs<-pfs*pSI(s0[m] - x[m], 0, R, s0[m],i0[m])
+  }
+  return(pfs)
+}
+
+pFS_comp <- cmpfun( function(R,x,s0,i0){
+  #Itterate over the trials 
+  pfs <- 1
+  for(m in c(1:length(x))){
+    pfs<-pfs*pSI_comp(s0[m] - x[m], 0, R, s0[m],i0[m])
+  }
+  return(pfs)
+})
+
+#return the complete final size distribution 
+FSdist <- function(R,s0,i0){
+  max.cases <- max(s0+i0)
+  dist <- NULL
+  for(m in c(1:length(s0))){
+    dist<-rbind(dist,sapply(c(0:max.cases), FUN = pSI, i = 0, R = R, s0 = s0[m],i0 = i0[m]))
+  }
+  return(dist)
+}
+
+system.time(FSdist(1,c(5,5),c(1,1)))
+
+
 
 
 #hand calculation compared to this one given R0 = 2 and x = 1
@@ -111,20 +166,7 @@ pFS(2,1,2,1)
 pFS(2,2,2,1)
 pFS(2,0,2,1) + pFS(2,1,2,1) +pFS(2,2,2,1)
 
-pFS()
-####Final size simulation starting from s and i animals in a total of n animals##############
-simFS <- function(R,s,i,n){
-  while(i > 0 & s > 0) 
-  {
-    #event is either 1 (additional infection) or 0 (recovery)
-    event <- rbinom(1,1,(R*s)/(R*s + n))
-    #change s and i accordingly
-    s <- s - event #if event = 1 subtract 1
-    i <- i + (2*event - 1)#if event = 0 subtract 1 else add 1
-    
-  }
-  return(s)
-}
+
 
 
 
