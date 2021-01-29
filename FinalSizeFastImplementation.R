@@ -111,7 +111,7 @@ FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE,max.val = 25){
   #lowerlimit is found for values of R for which the probability of extremes below the observations 
   res$ci.ll <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `<=`) - alpha / (2 - onesided))^2})$minimum
   #upperlimit is found for values of R for which the probability of extremes above the observations
-  res$ci.ul <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `>=`) -( alpha / (2 - onesided)))^2})$minimum
+  res$ci.ul <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `>`) -( alpha / (2 - onesided)))^2})$minimum
   
   #probability of R >= 1 is found be calculating the probability to find an equal or less positive under the assumption R0 = 1
   res$pval = pExtremes(1,x,s0,i0,comp = `<=`)
