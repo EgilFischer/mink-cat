@@ -83,7 +83,9 @@ pExtremes<-  function(r,x,s0in,i0in,comp = `<`){
   #produce final size distribution for value r
   final.size.dist <- distFSfast(r,s0in,i0in);
   #define function for this distribution for the probability of a certain number of cases x in each of the trials
-  pFSloc<- function(v){return(prod(mapply(function(i,j)final.size.dist[i,j+1],c(1:length(s0in)),v)))}
+  pFSloc<- function(v){
+    return(prod(mapply(function(i,j)final.size.dist[i,j+1],c(1:length(s0in)),v)))
+    }
   #select the extremes by selecting those for which the total number of cases
   #and the sum of x are given by the comparison "comp"  thus either <,>,<= or >= 
   #calculate for each extreme the probability of the Final Size under the hypothesis R = r
@@ -92,8 +94,10 @@ pExtremes<-  function(r,x,s0in,i0in,comp = `<`){
   if(is.null(dim(out[comp(apply(out,1,sum),sum(x)),]))){
     #only requires the final size distribution
        return(sum(final.size.dist[out[comp(apply(out,1,sum),sum(x)),]]))}
-  #else
-  return(c(sum(apply(out[comp(apply(out,1,sum),sum(x)),],1,function(ext){pFSloc(ext)}))))
+    #else
+       return(c(sum(apply(out[comp(apply(out,1,sum),sum(x)),],
+                          1,
+                          function(ext){pFSloc(ext)}))))
 }
 
 ##################################################################################################
@@ -111,7 +115,7 @@ FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE,max.val = 25){
   #lowerlimit is found for values of R for which the probability of extremes below the observations 
   res$ci.ll <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `<=`) - alpha / (2 - onesided))^2})$minimum
   #upperlimit is found for values of R for which the probability of extremes above the observations
-  res$ci.ul <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `>`) -( alpha / (2 - onesided)))^2})$minimum
+  res$ci.ul <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `>=`) -( alpha / (2 - onesided)))^2})$minimum
   
   #probability of R >= 1 is found be calculating the probability to find an equal or less positive under the assumption R0 = 1
   res$pval = pExtremes(1,x,s0,i0,comp = `<=`)
