@@ -106,21 +106,32 @@ pExtremes<-  function(r,x,s0in,i0in,comp = `<`){
 #                  Includes confidence interval size 1- alpha and R >= 1 test                    #
 #                                                                                                #
 ##################################################################################################
-FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE,max.val = 25){
+FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE, max.val = 250){
   res <- data.frame(point.est = as.numeric(1), ci.ll = as.numeric(1),ci.ul= as.numeric(1), pval = as.numeric(1))
   #determine the point estimate by optimization of the log-likelihood function
-  res$point.est <- optimize(interval = c(0.0,max.val), f = function(R){-log(pFS(R,x,s0,i0))})$minimum
+  res$point.est <- ifelse(sum(x)==0,0,
+                          ifelse(sum(x)==sum(s0),Inf,
+                    optimize(interval = c(0.,max.val),
+                            f = function(R){-log(pFS(R,s0-x,s0,i0))})$minimum))
   #determine the confidence intervals
   #if one-sided is FALSE both sides, either only lower or upper limit of CI
   #lowerlimit is found for values of R for which the probability of extremes below the observations 
-  res$ci.ll <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `<=`) - alpha / (2 - onesided))^2})$minimum
+  res$ci.ll <- ifelse(sum(x)==0,0,
+                      uniroot(interval = c(0.0,max.val),f = function(R){( pExtremes(R,s0-x,s0,i0,comp = `<=`) - alpha / (2 - onesided))})$root)
   #upperlimit is found for values of R for which the probability of extremes above the observations
-  res$ci.ul <- optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,x,s0,i0,comp = `>=`) -( alpha / (2 - onesided)))^2})$minimum
+  res$ci.ul <- ifelse(sum(x)==sum(s0),Inf,
+                      optimize(interval = c(0.0,max.val),f = function(R){( pExtremes(R,s0-x,s0,i0,comp = `>=`) -( alpha / (2 - onesided)))^2})$minimum)
   
   #probability of R >= 1 is found be calculating the probability to find an equal or less positive under the assumption R0 = 1
   res$pval = pExtremes(1,x,s0,i0,comp = `<=`)
   
   return(res)
 }
+
+#tests
+FinalSize(c(0,0,0,0),c(2,2,2,2),c(2,2,2,2),onesided = F, max.val = 100)
+FinalSize(c(2,2,2,2),c(2,2,2,2),c(2,2,2,2),onesided = F, max.val = 1200)
+FinalSize(c(2,1,1,0),c(2,2,2,2),c(2,2,2,2)) 
+FinalSize(c(3),c(20),c(20)) 
 
 

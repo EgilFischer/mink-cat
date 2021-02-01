@@ -72,4 +72,3 @@ i0.cats<- rep(1,length(fs.data$codeloc)) #initial infectious is 1
 FinalSize(x.cats,s0.cats,i0.cats,max.val = 200)
 FinalSize(x.cats[1],s0.cats[1],i0.cats[1],max.val = 500)
 FinalSize(x.cats[2],s0.cats[2],i0.cats[2],max.val = 500)
-
