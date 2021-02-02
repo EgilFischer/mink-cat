@@ -138,7 +138,7 @@ FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE, max.val = 250){
   #probability of R >= 1 is found be calculating the probability to find an equal or less positive under the assumption R0 = 1
   res$pval.above1 = pExtremes(1,x,s0,i0,comp = `<=`)
   res$pval.below1 = pExtremes(1,x,s0,i0,comp = `>=`)
- 
+  res$pval.equal1 = pExtremes(1,x,s0,i0,comp = `>=`) * pExtremes(1,x,s0,i0,comp = `<=`)
   return(res)
 }
 
@@ -149,5 +149,6 @@ FinalSize(c(2,1,1,0),c(2,2,2,2),c(2,2,2,2))
 FinalSize(c(3),c(20),c(20),max.val = 50) 
 
 FinalSize(c(7,4),c(40,19)-1, c(1,1))
+FinalSize(c(7),c(40)-1, c(1))
 FinalSize(c(6,2),c(24,12)-1, c(1,1))
 
