@@ -72,7 +72,7 @@ exp(-diff(summary(fit)$coefficients[1:2]))
 
 
 #use farm location as covariate
-fit <- glm(SARS2_ELISA ~ codeloc,offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
+fit <- glm(SARS2_ELISA ~ as.factor(codeloc),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
 summary(fit)
 drop1(fit)
 
@@ -90,7 +90,16 @@ exp(sum(summary(fit)$coefficients[1:2]))
 exp(-diff(summary(fit)$coefficients[1:2]))
 
 #select farms NB1 and NB4
-fit <- glm(SARS2_ELISA ~ codeloc,offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data[cat.data$codeloc == 1||cat.data$codeloc == 4],)
+fit <- glm(SARS2_ELISA ~ codeloc,offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data[cat.data$codeloc == 1||cat.data$codeloc == 4])
+summary(fit)
+drop1(fit)
+
+exp(summary(fit)$coefficients[1])
+exp(sum(summary(fit)$coefficients[1:2]))
+exp(-diff(summary(fit)$coefficients[1:2]))
+
+#covariate cat or kitten
+fit <- glm(SARS2_ELISA ~ as.factor(katspec),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
 summary(fit)
 drop1(fit)
 

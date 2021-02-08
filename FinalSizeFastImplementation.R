@@ -142,13 +142,5 @@ FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE, max.val = 250){
   return(res)
 }
 
-#tests for same code as Mathematica book of Mart de Jong
-FinalSize(c(0,0,0,0),c(2,2,2,2),c(2,2,2,2),onesided = T)
-FinalSize(c(2,2,2,2),c(2,2,2,2),c(2,2,2,2),onesided = T)
-FinalSize(c(2,1,1,0),c(2,2,2,2),c(2,2,2,2)) 
-FinalSize(c(3),c(20),c(20),max.val = 50) 
 
-FinalSize(c(7,4),c(40,19)-1, c(1,1))
-FinalSize(c(7),c(40)-1, c(1))
-FinalSize(c(6,2),c(24,12)-1, c(1,1))
 
