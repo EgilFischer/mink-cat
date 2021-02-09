@@ -46,7 +46,7 @@ exposure.data.average$firstsympmean <- aggregate(exposure.data$firstsympmean,
 #set the exposure time in days
 cat.data$exposure <- sapply(c(1:length(cat.data$katnum)), 
                             FUN = function(x){difftime(cat.data[x,]$katdatum,
-                                                        exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$firstsympmean,unit = "days")})  
+                                                        exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$firstsymp1,unit = "days")})  
 
 
 
@@ -67,8 +67,11 @@ exp(sum(summary(fit)$coefficients[1:2]))
 exp(-diff(summary(fit)$coefficients[1:2]))
 
 # results in
-1-exp(-point.est * 31)
-1-exp(-point.est * 41)
+1-exp(-point.est * mean(cat.data$exposure))
+1-exp(-point.est * mean(cat.data[cat.data$codeloc ==1, ]$exposure))
+1-exp(-point.est * mean(cat.data[cat.data$codeloc ==4, ]$exposure))
+sort(1-exp(-point.est * unique(cat.data$exposure)))
+summary(1-exp(-point.est * unique(cat.data$exposure)))
 
 #Expected number of infected cats per farm
 exp.num.inf<- cbind(aggregate(1- exp(-point.est*cat.data$exposure),
@@ -145,3 +148,7 @@ x.cats <- fs.data$SARS2_ELISA-1 #cases
 s0.cats <- fs.data$samples -1   #susceptible cats at start is samples minus 1
 i0.cats<- rep(1,length(fs.data$codeloc)) #initial infectious is 1
 FinalSize(x.cats,s0.cats,i0.cats)
+
+#exclude farm 6
+FinalSize(x.cats[1:2],s0.cats[1:2],i0.cats[1:2])
+
