@@ -86,13 +86,22 @@ exp.num.inf$Obs <- aggregate(cat.data$SARS2_ELISA,
 
 exp.num.inf$Expected <- exp.num.inf$tested * exp.num.inf$`E(prev)`
 exp.num.inf$pObs <- (mapply(pbinom,exp.num.inf$Obs,exp.num.inf$tested,exp.num.inf$`E(prev)`, list(lower.tail = T)))
-
-exp.num.inf
+qchisq(0.95,1)
+chiTest<- (sum(exp.num.inf$pObs)-sum(exp.num.inf$Expected) )^2/sum(exp.num.inf$Expected) 
+chiTest
+pchisq(chiTest,df =1,lower.tail = F )
+chiTest<- sum(exp.num.inf$OE^2/exp.num.inf$Expected)
+chiTest
+qchisq(0.95,df = length(exp.num.inf$NB))
+pchisq(chiTest,df = length(exp.num.inf$NB),lower.tail = F )
+chisq.test(x = as.table(rbind(exp.num.inf$tested,exp.num.inf$Obs)))
+prop.test(n = exp.num.inf$tested,x = exp.num.inf$Obs, p = exp.num.inf$`E(prev)`)
 
 #use farm location as covariate
 fit <- glm(SARS2_ELISA ~ as.factor(codeloc),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
 summary(fit)
 drop1(fit)
+plot(fit)
 
 exp(summary(fit)$coefficients[1])
 exp(sum(summary(fit)$coefficients[1:2]))
