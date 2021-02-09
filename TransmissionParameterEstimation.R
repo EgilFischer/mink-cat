@@ -70,6 +70,24 @@ exp(-diff(summary(fit)$coefficients[1:2]))
 1-exp(-point.est * 31)
 1-exp(-point.est * 41)
 
+#Expected number of infected cats per farm
+exp.num.inf<- cbind(aggregate(1- exp(-point.est*cat.data$exposure),
+          mean,
+          by = list(NB = cat.data$codeloc)),
+          aggregate(1- exp(-point.est*cat.data$exposure),
+                    length,
+                    by = list(NB = cat.data$codeloc)))
+colnames(exp.num.inf)<-c("NB","E(prev)","NB","tested")
+exp.num.inf$Obs <- aggregate(cat.data$SARS2_ELISA,
+                             sum,
+                             by = list(NB = cat.data$codeloc),
+                             na.rm = T)$x          
+
+
+exp.num.inf$Expected <- exp.num.inf$tested * exp.num.inf$`E(prev)`
+exp.num.inf$pObs <- (mapply(pbinom,exp.num.inf$Obs,exp.num.inf$tested,exp.num.inf$`E(prev)`, list(lower.tail = T)))
+
+exp.num.inf
 
 #use farm location as covariate
 fit <- glm(SARS2_ELISA ~ as.factor(codeloc),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
