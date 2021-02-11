@@ -1,9 +1,13 @@
 #############################################################
-#        Transmission of SARS-CoV2 on mink farms            #
-#           from mink to cat                                #
-#           between cats (R0 final size)                    #
+#        SARS-CoV2 and companion animals on mink farms      #
+#           - Risk factors                                  #
+#           - Transmission                                  #
+#            from mink to cat                               #
+#            between cats (R0 final size)                   #
 #                                                           #
-#       Data Analists: Egil A.J. Fischer / Anna van Aart    #
+#       Authors:                                            #
+#       Egil A.J. Fischer (e.a.j.fischer@uu.nl)             #
+#       Anna E. van Aart (a.e.vanaart@students.uu.nl)       #
 #                                                           #
 #############################################################
 
@@ -19,52 +23,86 @@ exposure.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dat
                           sheet = "exposure time")
 
 
-
 ## remove dog data ###
 cat.data = full.data[full.data$katspec != "dog",]
 
+### Possible risk factors SARS-CoV-2 infection blood sampled adult feral cats ##
+attach(cat.data)
+names(cat.data)
+summary(cat.data)
+
+#number of records
+length(cat.data$katnum)
+
+#positive cats
+cat.data$sarscov2pos <- katpcr_o + SARS2_ELISA
+table(sarscov2pos)
+
+#number of cats with a valid serological or pcr test
+length(sarscov2pos[!is.na(sarscov2pos)])
+
+
+# positive (%) , negative (%)
+table(SARS2_ELISA, katgesla)
+prop.table(table(SARS2_ELISA, katgesla))
+table(SARS2_ELISA, katleeft)
+table(SARS2_ELISA, katpet)
+table(SARS2_ELISA, katlact)
+table(SARS2_ELISA, katprgnt)
+
+
+fisher.test(SARS2_ELISA, katgesla) #sex
+t.test(katleeft ~ SARS2_ELISA, var.equal=TRUE) #age
+fisher.test(SARS2_ELISA, katpet) #pet or stray
+fisher.test(SARS2_ELISA, katlact) #lactating
+fisher.test(SARS2_ELISA, katprgnt) #pregnant
+
+# risk factors pregnancy, lactation and sex -> OR + 95% CL was calculated with 2x2-table (manually)
+detach(cat.data)
+
+
+#############################################################################
+#            Estimation of transmission                                     #
+#############################################################################
 ## calculate exposure time
-exposure.data.average <-  aggregate(exposure.data$culling,
-                                  by =list(exposure.data$`code loc`),
-                                  FUN = mean,id.vals =);
+exposure.data.average <-  aggregate(as.Date(exposure.data$culling, format = "%Y%m%D"),
+                                    by =list(exposure.data$`code loc`),
+                                    FUN = mean,id.vals =) ;
 colnames(exposure.data.average) <-  c("code.loc","culling.date");
-exposure.data.average$diagnose <-  aggregate(exposure.data$diagnose,
-                                  by =list(exposure.data$`code loc`),
-                                  FUN = mean)[,2]
-exposure.data.average$firstsymp1 <-  aggregate(exposure.data$firstsymp1,
-                                           by =list(exposure.data$`code loc`),
-                                           FUN = mean)[,2]
-exposure.data.average$firstsymp2 <-  aggregate(exposure.data$firstsymp2,
-                                           by =list(exposure.data$`code loc`),
-                                           FUN = mean)[,2]
-exposure.data.average$firstsympmean <- aggregate(exposure.data$firstsympmean,
+exposure.data.average$diagnose <-  as.Date(aggregate(exposure.data$diagnose,
+                                             by =list(exposure.data$`code loc`),
+                                             FUN = mean)[,2], format = "%Y%m%D")  
+exposure.data.average$firstsymp1 <-  as.Date(aggregate(exposure.data$firstsymp1,
+                                               by =list(exposure.data$`code loc`),
+                                               FUN = mean)[,2], format = "%Y%m%D") 
+exposure.data.average$firstsymp2 <-  as.Date(aggregate(exposure.data$firstsymp2,
+                                               by =list(exposure.data$`code loc`),
+                                               FUN = mean)[,2], format = "%Y%m%D") 
+exposure.data.average$firstsympmean <- as.Date(aggregate(exposure.data$firstsympmean,
                                                  by =list(exposure.data$`code loc`),
-                                                 FUN = mean)[,2]
-
-
+                                                 FUN = mean)[,2], format = "%Y%m%D") 
 
 #set the exposure time in days
+cat.data$katdatum <- as.Date(cat.data$katdatum , format = "%Y%m%D") 
 cat.data$exposure <- sapply(c(1:length(cat.data$katnum)), 
-                            FUN = function(x){difftime(cat.data[x,]$katdatum,
-                                                        exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$firstsymp1,unit = "days")})  
-
-
-
-
+                            FUN = function(x){difftime(min(cat.data[x,]$katdatum,exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$culling.date),
+                                                       exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$firstsympmean,unit = "days")})  
+table(data.frame(cat.data$codeloc,cat.data$exposure))
 
 
 ## Mink to cat ####
 #Assumption is that the exposure to a infected farm causes cats to be infected with a constant infection rate
 #The probability p of a cat being infected given a certain exposure time t =
-#p = 1 - (1- E^(beta*t))
+#p = 1 - (1- E^(-beta*t))
 # to estimate this value we use a GLM with a complementary log-log link function
 fit <- glm(SARS2_ELISA ~ 1,offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
 summary(fit)
 
 point.est <- exp(summary(fit)$coefficients[1])
 point.est
-exp(sum(summary(fit)$coefficients[1:2]))
 exp(-diff(summary(fit)$coefficients[1:2]))
+exp(sum(summary(fit)$coefficients[1:2]))
+
 
 # results in
 1-exp(-point.est * mean(cat.data$exposure))
@@ -89,14 +127,7 @@ exp.num.inf$Obs <- aggregate(cat.data$SARS2_ELISA,
 
 exp.num.inf$Expected <- exp.num.inf$tested * exp.num.inf$`E(prev)`
 exp.num.inf$pObs <- (mapply(pbinom,exp.num.inf$Obs,exp.num.inf$tested,exp.num.inf$`E(prev)`, list(lower.tail = T)))
-qchisq(0.95,1)
-chiTest<- (sum(exp.num.inf$pObs)-sum(exp.num.inf$Expected) )^2/sum(exp.num.inf$Expected) 
-chiTest
-pchisq(chiTest,df =1,lower.tail = F )
-chiTest<- sum(exp.num.inf$OE^2/exp.num.inf$Expected)
-chiTest
-qchisq(0.95,df = length(exp.num.inf$NB))
-pchisq(chiTest,df = length(exp.num.inf$NB),lower.tail = F )
+
 chisq.test(x = as.table(rbind(exp.num.inf$tested,exp.num.inf$Obs)))
 prop.test(n = exp.num.inf$tested,x = exp.num.inf$Obs, p = exp.num.inf$`E(prev)`)
 
