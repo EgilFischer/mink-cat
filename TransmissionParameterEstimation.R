@@ -25,14 +25,14 @@ exposure.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dat
 
 ## remove dog data ###
 cat.data = full.data[full.data$katspec != "dog",]
-
+adult.cat.data = cat.data[cat.data$katspec != "kitten",]
 ### Possible risk factors SARS-CoV-2 infection blood sampled adult feral cats ##
-attach(cat.data)
-names(cat.data)
-summary(cat.data)
+attach(adult.cat.data)
+names(adult.cat.data)
+summary(adult.cat.data)
 
 #number of records
-length(cat.data$katnum)
+length(adult.cat.data$katnum)
 
 #positive cats
 cat.data$sarscov2pos <- katpcr_o + SARS2_ELISA
@@ -58,7 +58,7 @@ fisher.test(SARS2_ELISA, katlact) #lactating
 fisher.test(SARS2_ELISA, katprgnt) #pregnant
 
 # risk factors pregnancy, lactation and sex -> OR + 95% CL was calculated with 2x2-table (manually)
-detach(cat.data)
+detach(adult.cat.data)
 
 
 #############################################################################
