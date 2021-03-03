@@ -9,4 +9,11 @@ Anna E. van Aart, Francisca C. Velkers, Egil A.J. Fischer, Els M. Broens, Herman
 [Data] (Dataset_hond-katFV20210128EF20210202.xlsx) 
 
 
+## License
+
+This project is licensed under the terms of the [GNU3.0 License](/LICENSE.md)
+
+## Citation
+
+Please [cite this project as described here](/CITATION.md).
 
