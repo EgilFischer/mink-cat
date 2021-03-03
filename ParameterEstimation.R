@@ -16,10 +16,10 @@ library(readxl)
 source("FinalSizeFastImplementation.R")
 
 ## load data  ####
-full.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dataset hond-katFV20210128EF20210202.xlsx",
+full.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dataset_hond-katFV20210128EF20210202.xlsx",
                       sheet = "NC_KAT 11-Aug-2020",
                       col_types = c("numeric","text","numeric","date",rep("guess",15)))
-exposure.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dataset hond-katFV20210128EF20210202.xlsx",
+exposure.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dataset_hond-katFV20210128EF20210202.xlsx",
                           sheet = "exposure time")
 
 

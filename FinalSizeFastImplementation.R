@@ -141,11 +141,7 @@ FinalSize<- function(x,s0,i0, alpha = 0.05, onesided = FALSE, max.val = 250){
   res$pval.equal1 = pExtremes(1,x,s0,i0,comp = `>=`) * pExtremes(1,x,s0,i0,comp = `<=`)
   return(res)
 }
-
-
-<<<<<<< HEAD
-=======
-FinalSize(c(7,4),c(40,19)-1, c(1,1))
-FinalSize(c(7),c(40)-1, c(1))
-FinalSize(c(6,2),c(24,12)-1, c(1,1))
->>>>>>> 228e6473dddcfc54e998902fb7364d044b5e00d0
+# Tests 
+# FinalSize(c(7,4),c(40,19)-1, c(1,1))
+# FinalSize(c(7),c(40)-1, c(1))
+# FinalSize(c(6,2),c(24,12)-1, c(1,1))
