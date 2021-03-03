@@ -4,3 +4,7 @@ Anna E. van Aart, Francisca C. Velkers, Egil A.J. Fischer, Els M. Broens, Herman
 
 [Analyses code for R](ParameterEstimation.R) 
 
+[Data](Dataset hond-katFV20210128EF20210202.xlsx) 
+
+
+
