@@ -26,6 +26,7 @@ exposure.data = read_xlsx("C:/Surfdrive/Projecten/Covid/CatsAndMink/mink-cat/Dat
 ## remove dog data ###
 cat.data = full.data[full.data$katspec != "dog",]
 adult.cat.data = cat.data[cat.data$katspec != "kitten",]
+
 ### Possible risk factors SARS-CoV-2 infection blood sampled adult feral cats ##
 attach(adult.cat.data)
 names(adult.cat.data)
@@ -89,7 +90,7 @@ cat.data$exposure <- sapply(c(1:length(cat.data$katnum)),
                                                        exposure.data.average[exposure.data.average$code.loc == cat.data[x,]$codeloc,]$firstsympmean,unit = "days")})  
 table(data.frame(cat.data$codeloc,cat.data$exposure))
 
-
+adult.cat.data <- cat.data[cat.data$katspec != "kitten",]
 ## Mink to cat ####
 #Assumption is that the exposure to a infected farm causes cats to be infected with a constant infection rate
 #The probability p of a cat being infected given a certain exposure time t =
@@ -128,50 +129,16 @@ exp.num.inf$Obs <- aggregate(cat.data$SARS2_ELISA,
 exp.num.inf$Expected <- exp.num.inf$tested * exp.num.inf$`E(prev)`
 exp.num.inf$pObs <- (mapply(pbinom,exp.num.inf$Obs,exp.num.inf$tested,exp.num.inf$`E(prev)`, list(lower.tail = T)))
 
-chisq.test(x = as.table(rbind(exp.num.inf$tested,exp.num.inf$Obs)))
-prop.test(n = exp.num.inf$tested,x = exp.num.inf$Obs, p = exp.num.inf$`E(prev)`)
+#chisq.test(x = as.table(rbind(exp.num.inf$tested,exp.num.inf$Obs)))
+prop.test(n = exp.num.inf$tested,
+          x = exp.num.inf$Obs, 
+          p = exp.num.inf$`E(prev)`)
 
-#use farm location as covariate
-fit <- glm(SARS2_ELISA ~ as.factor(codeloc),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
-summary(fit)
-drop1(fit)
-plot(fit)
-
-exp(summary(fit)$coefficients[1])
-exp(sum(summary(fit)$coefficients[1:2]))
-exp(-diff(summary(fit)$coefficients[1:2]))
-
-#use farm location as covariate
-fit <- glm(SARS2_ELISA ~ as.numeric(1-cat.data$codeloc %in%c(1,4)),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
-summary(fit)
-drop1(fit)
-
-exp(summary(fit)$coefficients[1])
-exp(sum(summary(fit)$coefficients[1:2]))
-exp(-diff(summary(fit)$coefficients[1:2]))
-
-#select farms NB1 and NB4
-fit <- glm(SARS2_ELISA ~ codeloc,offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data[cat.data$codeloc == 1||cat.data$codeloc == 4])
-summary(fit)
-drop1(fit)
-
-exp(summary(fit)$coefficients[1])
-exp(sum(summary(fit)$coefficients[1:2]))
-exp(-diff(summary(fit)$coefficients[1:2]))
-
-#covariate cat or kitten
-fit <- glm(SARS2_ELISA ~ as.factor(katspec),offset = log(1 * exposure),family = binomial(link = "cloglog"), data = cat.data)
-summary(fit)
-drop1(fit)
-
-exp(summary(fit)$coefficients[1])
-exp(sum(summary(fit)$coefficients[1:2]))
-exp(-diff(summary(fit)$coefficients[1:2]))
 
 ## R0
 # estimate R with final size distribution for each farm 
-fs.data <- cbind(aggregate(SARS2_ELISA ~codeloc,sum,data = cat.data),
-      samples = aggregate(katserum ~ codeloc,length,data = cat.data)[1:8,2])
+fs.data <- cbind(aggregate(SARS2_ELISA ~codeloc,sum,data = adult.cat.data),
+      samples = aggregate(katserum ~ codeloc,length,data = adult.cat.data)[1:8,2])
 fs.data<- fs.data[fs.data$SARS2_ELISA>0&fs.data$samples>1,]#only those where at least one infectious and more than 1 sample is present
 fs.data
 
