@@ -11,7 +11,7 @@ Anna E. van Aart, Francisca C. Velkers, Egil A.J. Fischer, Els M. Broens, Herman
 
 ## License
 
-This project is licensed under the terms of the [GNU3.0 License](/LICENSE.md)
+This project is licensed under the terms of the [GNU General Public License v3.0](/LICENSE.md)
 
 ## Citation
 
