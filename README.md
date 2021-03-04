@@ -1,5 +1,5 @@
 # SARS-CoV-2  infection in cats and dogs living on infected mink farms in the Netherlands
-Anna E. van Aart, Francisca C. Velkers, Egil A.J. Fischer, et al 2020
+Anna E. van Aart, Francisca C. Velkers, Egil A.J. Fischer, et al 2021
 
 Risk factor analyses and transmission estimation for SARS-CoV2 on cats and dogs living on mink farms in the Netherlands
 
