@@ -17,4 +17,4 @@ This project is licensed under the terms of the [GNU General Public License v3.0
 ## Citation
 
 Please [cite this project as described here](/CITATION.md).
-Please [cite](https://github.com/EgilFischer/mink-cat/blob/main/CITATION)
+Please [cite](/CITATION)
