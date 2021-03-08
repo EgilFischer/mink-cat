@@ -5,7 +5,7 @@ Risk factor analyses and transmission estimation for SARS-CoV2 on cats and dogs 
 
 [Analyses code for R](ParameterEstimation.R) 
 
-[Final size calculation](FinalSizeFastImplementation.R)
+[Final size calculation](FinalSizeFastImplementation.R) this file is not used in the paper, but can be used to estimate cat to cat transmission
 
 [Data file](/Dataset_hond-katFV20210128EF20210202.xlsx) 
 
