@@ -133,8 +133,9 @@ exp.num.inf$pObs <- (mapply(pbinom,exp.num.inf$Obs,exp.num.inf$tested,exp.num.in
 prop.test(n = exp.num.inf$tested,
           x = exp.num.inf$Obs, 
           p = exp.num.inf$`E(prev)`)
-
-
+###############################################End of code for paper###########################################################
+###############################################################################
+#Additional material used to calculate R0 among the cats after introduction   #
 ## R0
 # estimate R with final size distribution for each farm 
 fs.data <- cbind(aggregate(SARS2_ELISA ~codeloc,sum,data = adult.cat.data),
