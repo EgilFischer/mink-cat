@@ -3,7 +3,7 @@
 #           - Risk factors                                  #
 #           - Transmission                                  #
 #            from mink to cat                               #
-#            between cats (R0 final size)                   #
+#            between cats (R0 final size) not in paper      #
 #                                                           #
 #       Authors:                                            #
 #       Egil A.J. Fischer (e.a.j.fischer@uu.nl)             #
